@@ -12,52 +12,100 @@
 @section Scripts {
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script>
-               const eggLat = 59.3723; // Latitude for Eskilstuna
-        const eggLng = 16.5074; // Longitude for Eskilstuna
         const username = prompt("Ange ditt namn:");
+        const eggCount = 8;
+        let eggs = [];
 
-        const map = L.map('map').setView([eggLat, eggLng], 15);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        L.marker([eggLat, eggLng]).addTo(map).bindPopup("🐣 Ägg!").openPopup();
+        // Funktion för att skapa ett slumpmässigt ägg inom radie
+        function getRandomEggLocation(centerLat, centerLng, radiusInMeters) {
+            const radiusInDegrees = radiusInMeters / 111320;
+            const u = Math.random();
+            const v = Math.random();
+            const w = radiusInDegrees * Math.sqrt(u);
+            const t = 2 * Math.PI * v;
+            const x = w * Math.cos(t);
+            const y = w * Math.sin(t);
 
+            const newLat = centerLat + y;
+            const newLng = centerLng + x / Math.cos(centerLat * Math.PI / 180);
+            return [newLat, newLng];
+        }
+
+        // Beräkna avstånd mellan två koordinater
         function getDistance(lat1, lon1, lat2, lon2) {
             const R = 6371e3;
             const toRad = a => a * Math.PI / 180;
             const dLat = toRad(lat2 - lat1);
             const dLon = toRad(lon2 - lon1);
-            const a = Math.sin(dLat/2)**2 +
+            const a = Math.sin(dLat / 2) ** 2 +
                     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-                    Math.sin(dLon/2)**2;
+                    Math.sin(dLon / 2) ** 2;
             return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         }
 
-                navigator.geolocation.getCurrentPosition(
+        // Kolla om man är nära något ägg
+        function checkNearbyEggs(userLat, userLng) {
+            eggs.forEach((egg, i) => {
+                if (!egg.found) {
+                    const dist = getDistance(userLat, userLng, egg.lat, egg.lng);
+                    if (dist < 30) {
+                        egg.found = true;
+
+                        egg.marker.setIcon(L.icon({
+                            iconUrl: "https://em-content.zobj.net/thumbs/240/apple/354/hatching-chick_1f423.png",
+                            iconSize: [32, 32]
+                        }));
+                        egg.marker.bindPopup("🎉 Du hittade Ägg " + (i + 1)).openPopup();
+
+                        fetch('/Index?handler=FoundEgg', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                username: username,
+                                latitude: egg.lat,
+                                longitude: egg.lng
+                            })
+                        });
+
+                        alert("🥚 Du hittade ägg " + (i + 1) + "!");
+                    }
+                }
+            });
+        }
+
+        // Hämta användarens position och starta spelet
+        navigator.geolocation.getCurrentPosition(
             pos => {
                 const userLat = pos.coords.latitude;
                 const userLng = pos.coords.longitude;
 
+                const map = L.map('map').setView([userLat, userLng], 15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+                // Visa användaren
                 L.circleMarker([userLat, userLng], {
                     radius: 8,
                     color: 'blue',
                     fillOpacity: 0.7
                 }).addTo(map).bindPopup("Du är här").openPopup();
 
-                const dist = getDistance(userLat, userLng, eggLat, eggLng);
-                if (dist < 30) {
-                    alert("🎉 Du hittade ett ägg!");
-
-                    fetch('/Index?handler=FoundEgg', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: username,
-                            latitude: userLat,
-                            longitude: userLng
-                        })
-                    });
-                } else {
-                    alert("Du är " + Math.round(dist) + " meter från ägget.");
+                // Skapa och placera 8 ägg
+                for (let i = 0; i < eggCount; i++) {
+                    const [eggLat, eggLng] = getRandomEggLocation(userLat, userLng, 1000);
+                    const marker = L.marker([eggLat, eggLng]).addTo(map).bindPopup("🐣 Ägg " + (i + 1));
+                    eggs.push({ lat: eggLat, lng: eggLng, found: false, marker: marker });
                 }
+
+                checkNearbyEggs(userLat, userLng);
+
+                // Kolla position regelbundet
+                setInterval(() => {
+                    navigator.geolocation.getCurrentPosition(p => {
+                        const lat = p.coords.latitude;
+                        const lng = p.coords.longitude;
+                        checkNearbyEggs(lat, lng);
+                    });
+                }, 10000);
             },
             err => {
                 alert("❌ Kunde inte hämta plats: " + err.message);
@@ -70,4 +118,4 @@
         );
     </script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-}
+    }
