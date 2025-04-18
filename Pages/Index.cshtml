@@ -1,0 +1,63 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Äggjakt";
+}
+
+<h1>🐣 Påskäggsjakt</h1>
+<p>Gå nära ett ägg för att plocka det!</p>
+
+<div id="map" style="height: 80vh;"></div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        const eggLat = 59.334591;
+        const eggLng = 18.063240;
+        const username = prompt("Ange ditt namn:");
+
+        const map = L.map('map').setView([eggLat, eggLng], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        L.marker([eggLat, eggLng]).addTo(map).bindPopup("🐣 Ägg!").openPopup();
+
+        function getDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3;
+            const toRad = a => a * Math.PI / 180;
+            const dLat = toRad(lat2 - lat1);
+            const dLon = toRad(lon2 - lon1);
+            const a = Math.sin(dLat/2)**2 +
+                    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                    Math.sin(dLon/2)**2;
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        }
+
+        navigator.geolocation.getCurrentPosition(pos => {
+            const userLat = pos.coords.latitude;
+            const userLng = pos.coords.longitude;
+
+            L.circleMarker([userLat, userLng], {
+                radius: 8,
+                color: 'blue',
+                fillOpacity: 0.7
+            }).addTo(map).bindPopup("Du är här").openPopup();
+
+            const dist = getDistance(userLat, userLng, eggLat, eggLng);
+            if (dist < 30) {
+                alert("🎉 Du hittade ett ägg!");
+
+                fetch('/Index?handler=FoundEgg', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: username,
+                        latitude: userLat,
+                        longitude: userLng
+                    })
+                });
+            } else {
+                alert("Du är " + Math.round(dist) + " meter från ägget.");
+            }
+        });
+    </script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+}

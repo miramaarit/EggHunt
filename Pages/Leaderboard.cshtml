@@ -1,0 +1,29 @@
+﻿@page
+@model EggHuntApp.Pages.LeaderboardModel
+@{
+    ViewData["Title"] = "Topplista";
+}
+<h1>@ViewData["Title"]</h1>
+
+<table>
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Användare</th>
+            <th>Ägg</th>
+            <th>Senast hittat</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.Leaderboard.Count; i++)
+        {
+            var entry = Model.Leaderboard[i];
+            <tr>
+                <td>@(i + 1)</td>
+                <td>@entry.Username</td>
+                <td>@entry.EggCount</td>
+                <td>@entry.LastFound.ToLocalTime().ToString("g")</td>
+            </tr>
+        }
+    </tbody>
+</table>
