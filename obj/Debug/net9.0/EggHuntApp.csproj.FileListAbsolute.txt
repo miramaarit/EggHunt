@@ -220,3 +220,4 @@ D:\Egghunt\EggHuntApp\obj\Debug\net9.0\refint\EggHuntApp.dll
 D:\Egghunt\EggHuntApp\obj\Debug\net9.0\EggHuntApp.pdb
 D:\Egghunt\EggHuntApp\obj\Debug\net9.0\EggHuntApp.genruntimeconfig.cache
 D:\Egghunt\EggHuntApp\obj\Debug\net9.0\ref\EggHuntApp.dll
+D:\Egghunt\EggHuntApp\obj\Debug\net9.0\EggHuntApp.sourcelink.json
