@@ -87,11 +87,11 @@
                     radius: 8,
                     color: 'blue',
                     fillOpacity: 0.7
-                }).addTo(map).bindPopup("Du är här").openPopup();
+                }).addTo(map).bindPopup("Din startposition").openPopup();
 
                 // Skapa och placera 8 ägg
                 for (let i = 0; i < eggCount; i++) {
-                    const [eggLat, eggLng] = getRandomEggLocation(userLat, userLng, 1000);
+                    const [eggLat, eggLng] = getRandomEggLocation(userLat, userLng, 600);
                     const marker = L.marker([eggLat, eggLng]).addTo(map).bindPopup("🐣 Ägg " + (i + 1));
                     eggs.push({ lat: eggLat, lng: eggLng, found: false, marker: marker });
                 }
