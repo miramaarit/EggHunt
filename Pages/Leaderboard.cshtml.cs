@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using EggHuntApp.Models;
 using EggHuntApp.Data;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore.SqlServer;
 
 namespace EggHuntApp.Pages;
 
