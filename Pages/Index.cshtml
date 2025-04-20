@@ -56,14 +56,18 @@
                             iconSize: [32, 32]
                         }));
                         egg.marker.bindPopup("🎉 Du hittade Ägg " + (i + 1)).openPopup();
-
+                                console.log("Sending data:", {
+            Username: username,
+            Latitude: egg.lat,
+            Longitude: egg.lng
+        });
                         fetch('/Index?handler=FoundEgg', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                username: username,
-                                latitude: egg.lat,
-                                longitude: egg.lng
+                               Username: username,
+                                Latitude: egg.lat,
+                                Longitude: egg.lng
                             })
                         });
 
@@ -117,5 +121,7 @@
             }
         );
     </script>
+   
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    }
+ }   
